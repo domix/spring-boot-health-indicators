@@ -27,6 +27,7 @@ import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -59,7 +60,7 @@ public class ResilienceHealthAutoConfiguration {
     private Map<String, RabbitTemplate> rabbitTemplates;
 
     @Bean
-    //@ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
+    @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
     public HealthIndicator rabbitMQHealthIndicator() {
       if (this.rabbitTemplates.size() == 1) {
         return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next());
