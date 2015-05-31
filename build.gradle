@@ -150,3 +150,5 @@ jacocoTestReport {
 }
 
 createReleaseTag.dependsOn bintrayUpload
+
+classes.dependsOn licenseFormat
