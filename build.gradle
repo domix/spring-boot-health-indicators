@@ -1,5 +1,34 @@
+import java.text.SimpleDateFormat
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.10.1'
+    classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
+  }
+}
+
+
+plugins {
+  id 'net.researchgate.release' version '2.1.0'
+  id "com.github.hierynomus.license" version "0.11.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'jacoco'
+apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'com.github.kt3k.coveralls'
+
+group = project.groupId
+version = project.version
+sourceCompatibility = project.javaVersion
+targetCompatibility = project.javaVersion
 
 repositories {
   jcenter()
@@ -11,3 +40,113 @@ dependencies {
   compile 'org.springframework.cloud:spring-cloud-starter-hystrix:1.0.2.RELEASE'
 }
 
+Date buildTimeAndDate = new Date()
+ext {
+  buildDate = new SimpleDateFormat('dd-MMM-yyyy').format(buildTimeAndDate)
+  buildTime = new SimpleDateFormat('hh:mm aa').format(buildTimeAndDate)
+}
+
+def jarManifestAttributes = [
+  'Built-By'  : System.properties['user.name'],
+  'Created-By': System.properties['java.version'] + ' (' + System.properties['java.vendor'] + ' ' + System.getProperty("java.vm.version") + ")",
+  'Build-Date': buildDate,
+  'Build-Time': buildTime]
+
+jar {
+  manifest {
+    attributes(jarManifestAttributes)
+  }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+license {
+  header rootProject.file('HEADER_LICENSE')
+  strictCheck true
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+
+      pom.withXml {
+        def root = asNode()
+        root.appendNode('name', project.name)
+        root.appendNode('description', project.description)
+        root.appendNode('url', 'https://github.com/domix/spring-boot-health-indicators')
+        root.appendNode('inceptionYear', '2015')
+
+        def scm = root.appendNode('scm')
+        scm.appendNode('url', 'https://github.com/domix/spring-boot-health-indicators')
+        scm.appendNode('connection', 'scm:https://domix@github.com/domix/spring-boot-health-indicators.git')
+        scm.appendNode('developerConnection', 'scm:git@github.com:domix/spring-boot-health-indicators.git')
+
+        def license = root.appendNode('licenses').appendNode('license')
+        license.appendNode('name', 'The Apache Software License, Version 2.0')
+        license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+        license.appendNode('distribution', 'repo')
+
+        def developers = root.appendNode('developers')
+        def domix = developers.appendNode('developer')
+        domix.appendNode('id', 'domix')
+        domix.appendNode('name', 'Domingo Suarez Torres')
+        domix.appendNode('email', 'domingo.suarez@gmail.com')
+      }
+    }
+  }
+}
+
+bintray {
+  user = project.hasProperty('bintrayUsername') ? bintrayUsername : ''
+  key = project.hasProperty('bintrayApiKey') ? bintrayApiKey : ''
+
+  publications = ['mavenJava']
+  dryRun = false //Whether to run this as dry-run, without deploying
+  publish = true //If version should be auto published after an upload
+  pkg {
+    repo = 'spring-boot'
+    userOrg = 'domix'
+    name = project.name
+    desc = project.description
+    websiteUrl = 'https://github.com/domix/spring-boot-health-indicators'
+    issueTrackerUrl = 'https://github.com/domix/spring-boot-health-indicators/issues'
+    vcsUrl = 'https://github.com/domix/spring-boot-health-indicators.git'
+    licenses = ['Apache-2.0']
+    labels = ['spring', 'spring-boot', 'actuator', 'health-indicator', 'rabbit', 'rabbitmq', 'hystrix']
+    publicDownloadNumbers = true
+    attributes = [:]
+    //Optional version descriptor
+    version {
+      name = project.version
+      desc = project.description
+      gpg {
+        sign = project.hasProperty('bintrayGpgPassphrase')
+        passphrase = project.hasProperty('bintrayGpgPassphrase') ? bintrayGpgPassphrase : ''
+      }
+      mavenCentralSync {
+        sync = false
+        user = ''
+        password = ''
+        close = '1'
+      }
+    }
+  }
+}
+
+jacocoTestReport {
+  reports {
+    xml.enabled = true // coveralls plugin depends on xml format report
+    html.enabled = true
+  }
+}
+
+createReleaseTag.dependsOn bintrayUpload
