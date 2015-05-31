@@ -1,13 +1,18 @@
 
+0.1.3 / 2015-05-31
+==================
+
+  * minor tweaks to improve the configuration
+
 0.1.2 / 2015-05-31
 ==================
 
-  * minor tweeks to improve the configuration
+  * minor tweaks to improve the configuration
 
 0.1.1 / 2015-05-31
 ==================
 
-  * added Autoconfiguration support
+  * added Auto-configuration support
   * added support for multiple RabbitTemplates
   * Added a convenience annotation to Enable the ResilienceHealth stuff
 
