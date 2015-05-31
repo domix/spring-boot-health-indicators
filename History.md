@@ -1,4 +1,9 @@
 
+0.1.5 / 2015-05-31
+==================
+
+  * added a validation to prevent duplicate bean registration if the user register their own RabbitMQHealthIndicator
+
 0.1.4 / 2015-05-31
 ==================
 
