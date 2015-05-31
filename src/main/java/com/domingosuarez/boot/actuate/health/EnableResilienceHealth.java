@@ -18,14 +18,19 @@ package com.domingosuarez.boot.actuate.health;
 
 import org.springframework.context.annotation.Import;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * @author Domingo Suarez Torres
  * @since 0.1.1
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Target(TYPE)
+@Retention(RUNTIME)
 @Documented
 @Import(ResilienceHealthAutoConfiguration.class)
 public @interface EnableResilienceHealth {

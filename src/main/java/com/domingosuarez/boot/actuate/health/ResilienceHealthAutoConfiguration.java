@@ -18,6 +18,7 @@ package com.domingosuarez.boot.actuate.health;
 
 import com.domingosuarez.boot.actuate.health.config.ResilienceHealthProperties;
 import com.netflix.hystrix.Hystrix;
+import com.rabbitmq.client.Channel;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
@@ -47,8 +48,7 @@ public class ResilienceHealthAutoConfiguration {
   private ResilienceHealthProperties configurationProperties = new ResilienceHealthProperties();
 
   @Configuration
-  //@AutoConfigureAfter({HealthIndicatorAutoConfiguration.class})
-  //@ConditionalOnBean(RabbitTemplate.class)
+  @ConditionalOnClass({RabbitTemplate.class, Channel.class})
   @ConditionalOnProperty(prefix = "resilience.health.rabbit", name = "enabled", matchIfMissing = true)
   public static class RabbitHealthIndicatorConfiguration {
 
