@@ -20,13 +20,11 @@ import com.domingosuarez.boot.actuate.health.config.ResilienceHealthProperties;
 import com.netflix.hystrix.HystrixCommand;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
 import org.springframework.boot.actuate.health.CompositeHealthIndicator;
 import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -38,10 +36,10 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 
 /**
- * Created by domix on 31/05/15.
+ * @author Domingo Suarez Torres
+ * @since 0.1.1
  */
 @Configuration
-@AutoConfigureBefore(EndpointAutoConfiguration.class)
 @AutoConfigureAfter(HealthIndicatorAutoConfiguration.class)
 @EnableConfigurationProperties(ResilienceHealthProperties.class)
 public class ResilienceHealthAutoConfiguration {
@@ -62,7 +60,7 @@ public class ResilienceHealthAutoConfiguration {
     private Map<String, RabbitTemplate> rabbitTemplates;
 
     @Bean
-    @ConditionalOnMissingBean(name = "rabbitMQHealthIndicator")
+    @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
     public HealthIndicator rabbitMQHealthIndicator() {
       if (this.rabbitTemplates.size() == 1) {
         return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next());

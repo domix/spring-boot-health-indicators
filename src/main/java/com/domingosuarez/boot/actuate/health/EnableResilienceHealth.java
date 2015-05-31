@@ -21,7 +21,8 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * Created by domix on 31/05/15.
+ * @author Domingo Suarez Torres
+ * @since 0.1.1
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

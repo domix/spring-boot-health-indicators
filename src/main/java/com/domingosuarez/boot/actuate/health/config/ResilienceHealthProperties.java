@@ -19,7 +19,8 @@ package com.domingosuarez.boot.actuate.health.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Created by domix on 31/05/15.
+ * @author Domingo Suarez Torres
+ * @since 0.1.1
  */
 @ConfigurationProperties(prefix = "resilience.health")
 public class ResilienceHealthProperties {
