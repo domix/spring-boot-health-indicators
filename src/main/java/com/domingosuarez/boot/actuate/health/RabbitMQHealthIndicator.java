@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.domingosuarez.boot.actuate.health;
 
 import com.netflix.hystrix.HystrixCommand;
@@ -7,6 +23,9 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.util.Assert;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -48,7 +67,14 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
       return builder.up()
         .withDetail("server_properties", rabbitTemplate.execute(channel ->
           channel.getConnection().getServerProperties().entrySet().stream()
-            .collect(toMap(entry -> entry.getKey(), entr -> entr.getValue().toString()))));
+            .map(e -> {
+              Object value = e.getValue().toString();
+              if (e.getValue().getClass().equals(java.util.HashMap.class)) {
+                value = e.getValue();
+              }
+              return new SimpleEntry<>(e.getKey(), value);
+            })
+            .collect(toMap(SimpleEntry::getKey, SimpleEntry::getValue))));
     }
 
     @Override
