@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  compile 'org.springframework.amqp:spring-rabbit:1.4.3.RELEASE'
+  compile 'org.springframework.boot:spring-boot-actuator:1.2.3.RELEASE'
+  compile 'org.springframework.cloud:spring-cloud-starter-hystrix:1.0.2.RELEASE'
+}
+

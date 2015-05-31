@@ -1,0 +1,13 @@
+.gradle
+build
+out
+.gradletasknamecache
+*.iml
+*.ipr
+*.iws
+.idea
+README.html
+*.log
+2.*/
+stdout
+stdout
