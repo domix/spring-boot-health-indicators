@@ -1,4 +1,9 @@
 
+0.1.10 / 2015-06-01
+==================
+
+  * fixed a bug when includeServerProperties is off
+
 0.1.9 / 2015-06-01
 ==================
 
