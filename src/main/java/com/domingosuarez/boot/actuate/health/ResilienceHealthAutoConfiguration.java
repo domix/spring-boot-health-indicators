@@ -16,6 +16,7 @@
  */
 package com.domingosuarez.boot.actuate.health;
 
+import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.domingosuarez.boot.actuate.health.config.ResilienceHealthProperties;
 import com.netflix.hystrix.Hystrix;
 import com.rabbitmq.client.Channel;
@@ -51,7 +52,10 @@ public class ResilienceHealthAutoConfiguration {
   @Configuration
   @ConditionalOnClass({RabbitTemplate.class, Channel.class})
   @ConditionalOnProperty(prefix = "resilience.health.rabbit", name = "enabled", matchIfMissing = true)
+  @EnableConfigurationProperties(RabbitMQResilienceHealthProperties.class)
   public static class RabbitHealthIndicatorConfiguration {
+    @Autowired
+    private RabbitMQResilienceHealthProperties properties = new RabbitMQResilienceHealthProperties();
 
     @Autowired
     private HealthAggregator healthAggregator;
@@ -63,13 +67,13 @@ public class ResilienceHealthAutoConfiguration {
     @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
     public HealthIndicator rabbitMQHealthIndicator() {
       if (this.rabbitTemplates.size() == 1) {
-        return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next());
+        return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next(), properties);
       }
 
       CompositeHealthIndicator composite = new CompositeHealthIndicator(this.healthAggregator);
 
       rabbitTemplates.entrySet().stream().
-        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(entry.getValue())));
+        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(entry.getValue(), properties)));
 
       return composite;
     }

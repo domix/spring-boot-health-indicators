@@ -16,13 +16,26 @@
  */
 package com.domingosuarez.boot.actuate.health.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Domingo Suarez Torres
- * @since 0.1.1
+ * @since 0.1.6
  */
-@ConfigurationProperties(prefix = "resilience.health")
-public class ResilienceHealthProperties {
-
+@ConfigurationProperties(prefix = "resilience.health.rabbitmq")
+public class RabbitMQResilienceHealthProperties {
+  @Setter
+  @Getter
+  private String hystrixCommandGroupKey = "resilience.health";
+  @Setter
+  @Getter
+  private String hystrixThreadPoolKey = "HealthIndicators";
+  @Setter
+  @Getter
+  private String hystrixCommandKey = "rabbitMQ";
+  @Setter
+  @Getter
+  private Integer executionIsolationThreadTimeoutInMilliseconds = 1000; // default => executionTimeoutInMilliseconds: 1000 = 1 second;
 }

@@ -16,8 +16,8 @@
  */
 package com.domingosuarez.boot.actuate.health;
 
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
+import com.netflix.hystrix.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -40,25 +40,33 @@ import static java.util.stream.Collectors.toMap;
 public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
   private static final Status RABBIT_DOWN = new Status("RABBIT_DOWN");
   private final RabbitTemplate rabbitTemplate;
+  private final RabbitMQResilienceHealthProperties properties;
 
-  public RabbitMQHealthIndicator(RabbitTemplate rabbitTemplate) {
+  public RabbitMQHealthIndicator(RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
+    this.properties = properties;
     Assert.notNull(rabbitTemplate, "RabbitTemplate must not be null.");
     this.rabbitTemplate = rabbitTemplate;
   }
 
   @Override
   protected void doHealthCheck(Health.Builder builder) throws Exception {
-    new HealthIndicatorCommand(rabbitTemplate, builder).execute();
+    new HealthIndicatorCommand(builder, rabbitTemplate, properties).execute();
   }
 
   static class HealthIndicatorCommand extends HystrixCommand<Health.Builder> {
     private RabbitTemplate rabbitTemplate;
+    private final RabbitMQResilienceHealthProperties properties;
     private Health.Builder builder;
 
-    public HealthIndicatorCommand(RabbitTemplate rabbitTemplate, Health.Builder builder) {
-      super(HystrixCommandGroupKey.Factory.asKey("ExampleGroup"));
+    public HealthIndicatorCommand(Health.Builder builder, RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
+      super(HystrixCommand.Setter
+        .withGroupKey(HystrixCommandGroupKey.Factory.asKey(properties.getHystrixCommandGroupKey()))
+        .andCommandKey(HystrixCommandKey.Factory.asKey(properties.getHystrixCommandKey()))
+        .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey(properties.getHystrixThreadPoolKey()))
+        .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(properties.getExecutionIsolationThreadTimeoutInMilliseconds())));
       this.builder = builder;
       this.rabbitTemplate = rabbitTemplate;
+      this.properties = properties;
     }
 
     @Override
