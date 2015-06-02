@@ -1,4 +1,10 @@
 
+0.1.6 / 2015-06-01
+==================
+
+  * allow to configure the Hystrix command for RabbitMQ health
+  * added some docs
+
 0.1.5 / 2015-05-31
 ==================
 
