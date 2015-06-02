@@ -84,12 +84,11 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
                 return new SimpleEntry<>(e.getKey(), value);
               })
               .collect(toMap(SimpleEntry::getKey, SimpleEntry::getValue))));
+      } else {
+        Health health = new RabbitHealthIndicator(rabbitTemplate).health();
+        health.getDetails().entrySet().stream().forEach(e -> builder.withDetail(e.getKey(), e.getValue()));
+        return builder.status(health.getStatus());
       }
-
-      Health health = new RabbitHealthIndicator(rabbitTemplate).health();
-      health.getDetails().entrySet().stream().forEach(e -> builder.withDetail(e.getKey(), e.getValue()));
-      return builder.status(health.getStatus());
-
     }
 
     @Override
@@ -98,9 +97,9 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
 
       if (properties.getUseClassicDown()) {
         return builder.down(exception);
+      } else {
+        return builder.status(RABBIT_DOWN).withException(exception);
       }
-
-      return builder.status(RABBIT_DOWN).withException(exception);
     }
   }
 }
