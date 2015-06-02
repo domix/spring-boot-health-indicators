@@ -1,4 +1,10 @@
 
+0.1.8 / 2015-06-01
+==================
+
+  * added the ability to disable the inclusion of RabbitMQ server properties
+  * added the ability to enable the classical behaviour of the SpringBoot Rabbit health indicator
+
 0.1.7 / 2015-06-01
 ==================
 
