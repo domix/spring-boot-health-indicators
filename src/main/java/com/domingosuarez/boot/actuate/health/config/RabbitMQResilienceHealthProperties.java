@@ -34,8 +34,14 @@ public class RabbitMQResilienceHealthProperties {
   private String hystrixThreadPoolKey = "HealthIndicators";
   @Setter
   @Getter
-  private String hystrixCommandKey = "rabbitMQ";
+  private String hystrixCommandKey = "rabbitHealth";
   @Setter
   @Getter
   private Integer executionIsolationThreadTimeoutInMilliseconds = 1000; // default => executionTimeoutInMilliseconds: 1000 = 1 second;
+  @Setter
+  @Getter
+  private Boolean includeServerProperties = Boolean.TRUE;
+  @Setter
+  @Getter
+  private Boolean useClassicDown = Boolean.FALSE;
 }

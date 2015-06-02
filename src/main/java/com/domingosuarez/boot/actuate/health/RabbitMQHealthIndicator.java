@@ -21,6 +21,7 @@ import com.netflix.hystrix.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.RabbitHealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.util.Assert;
 
@@ -71,23 +72,35 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected Health.Builder run() throws Exception {
-      return builder.up()
-        .withDetail("server_properties", rabbitTemplate.execute(channel ->
-          channel.getConnection().getServerProperties().entrySet().stream()
-            .map(e -> {
-              Object value = e.getValue().toString();
-              if (e.getValue().getClass().equals(java.util.HashMap.class)) {
-                value = e.getValue();
-              }
-              return new SimpleEntry<>(e.getKey(), value);
-            })
-            .collect(toMap(SimpleEntry::getKey, SimpleEntry::getValue))));
+      if (properties.getIncludeServerProperties()) {
+        return builder.up()
+          .withDetail("server_properties", rabbitTemplate.execute(channel ->
+            channel.getConnection().getServerProperties().entrySet().stream()
+              .map(e -> {
+                Object value = e.getValue().toString();
+                if (e.getValue().getClass().equals(java.util.HashMap.class)) {
+                  value = e.getValue();
+                }
+                return new SimpleEntry<>(e.getKey(), value);
+              })
+              .collect(toMap(SimpleEntry::getKey, SimpleEntry::getValue))));
+      }
+
+      Health health = new RabbitHealthIndicator(rabbitTemplate).health();
+      health.getDetails().entrySet().stream().forEach(e -> builder.withDetail(e.getKey(), e.getValue()));
+      return builder.status(health.getStatus());
+
     }
 
     @Override
     protected Health.Builder getFallback() {
-      return builder.status(RABBIT_DOWN)
-        .withException((Exception) getFailedExecutionException());
+      Exception exception = getExceptionFromThrowable(getFailedExecutionException());
+
+      if (properties.getUseClassicDown()) {
+        return builder.down(exception);
+      }
+
+      return builder.status(RABBIT_DOWN).withException(exception);
     }
   }
 }
