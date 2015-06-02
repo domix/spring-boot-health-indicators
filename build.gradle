@@ -78,6 +78,9 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
       from components.java
+
+      it.pom.getRuntimeDependencies().clear()
+
       artifact sourcesJar
 
       pom.withXml {
