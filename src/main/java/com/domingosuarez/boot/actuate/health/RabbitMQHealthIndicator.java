@@ -28,6 +28,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -90,7 +91,7 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
       if (properties.getIncludeServerProperties()) {
         return up.withDetail("server_properties", serverProperties);
       } else {
-        String version = serverProperties.containsKey(VERSION) ? serverProperties.get(VERSION).toString() : "";
+        String version = ofNullable(serverProperties.get(VERSION)).map(Object::toString).orElse("");
         return up.withDetail(VERSION, version);
       }
     }
