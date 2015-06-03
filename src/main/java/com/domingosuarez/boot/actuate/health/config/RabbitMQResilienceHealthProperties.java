@@ -73,7 +73,7 @@ public class RabbitMQResilienceHealthProperties {
    * When RabbitMQ is down, the default response by the indicator will be 'RABBIT_DOWN'
    * and the Application health will not be affected by the failing RabbitMQ.
    * Setting this flag to true will behave like the default one, this means the response
-   * will be 'DOWN' and the Applicacion health will be 'DOWN' as well.
+   * will be 'DOWN' and the Application health will be 'DOWN' as well.
    */
   @Setter
   @Getter
