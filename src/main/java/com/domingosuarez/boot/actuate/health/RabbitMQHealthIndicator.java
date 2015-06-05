@@ -56,12 +56,22 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
     new HealthIndicatorCommand(builder, rabbitTemplate, properties).execute();
   }
 
+  /**
+   * Hystric command to perform the RabbitMQ health check.
+   */
   static class HealthIndicatorCommand extends HystrixCommand<Health.Builder> {
     public static final String VERSION = "version";
     private RabbitTemplate rabbitTemplate;
     private final RabbitMQResilienceHealthProperties properties;
     private Health.Builder builder;
 
+    /**
+     * Creates the Hystrix command, using all the configuration values from RabbitMQResilienceHealthProperties
+     *
+     * @param builder
+     * @param rabbitTemplate
+     * @param properties
+     */
     public HealthIndicatorCommand(Health.Builder builder, RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
       super(HystrixCommand.Setter
         .withGroupKey(HystrixCommandGroupKey.Factory.asKey(properties.getHystrixCommandGroupKey()))
