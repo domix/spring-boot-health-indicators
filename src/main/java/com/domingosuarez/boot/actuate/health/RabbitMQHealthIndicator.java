@@ -46,9 +46,9 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
   private final RabbitMQResilienceHealthProperties properties;
 
   public RabbitMQHealthIndicator(RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
-    this.properties = properties;
     Assert.notNull(rabbitTemplate, "RabbitTemplate must not be null.");
     this.rabbitTemplate = rabbitTemplate;
+    this.properties = properties;
   }
 
   @Override
@@ -92,6 +92,7 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
             if (e.getValue().getClass().equals(HashMap.class)) {
               value = e.getValue();
             }
+
             return new SimpleEntry<>(e.getKey(), value);
           })
           .collect(toMap(SimpleEntry::getKey, SimpleEntry::getValue)));
