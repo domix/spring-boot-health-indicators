@@ -56,12 +56,15 @@ public class ResilienceHealthAutoConfiguration {
   @ConditionalOnClass(Client.class)
   public static class RabbitManagementConfiguration {
     @Autowired
+    private RabbitMQResilienceHealthProperties properties = new RabbitMQResilienceHealthProperties();
+
+    @Autowired
     private RabbitProperties rabbitProperties;
 
     @Bean
     @ConditionalOnMissingBean(RabbitMQManagement.class)
     public RabbitMQManagement rabbitMQManagementInformation() {
-      return new RabbitMQManagement(rabbitProperties);
+      return new RabbitMQManagement(rabbitProperties, properties);
     }
   }
 
@@ -97,5 +100,5 @@ public class ResilienceHealthAutoConfiguration {
       return composite;
     }
   }
-  
+
 }

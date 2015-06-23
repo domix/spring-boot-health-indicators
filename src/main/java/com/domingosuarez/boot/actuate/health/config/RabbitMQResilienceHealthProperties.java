@@ -78,4 +78,16 @@ public class RabbitMQResilienceHealthProperties {
   @Setter
   @Getter
   private Boolean useClassicDown = Boolean.FALSE;
+
+  @Setter
+  @Getter
+  private Integer managementPort = 15672;
+
+  @Setter
+  @Getter
+  private String managementProtocol = "http";
+
+  @Setter
+  @Getter
+  private String managementEndpoint = "/api/";
 }

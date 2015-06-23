@@ -16,6 +16,7 @@
  */
 package com.domingosuarez.boot.actuate.health;
 
+import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.rabbitmq.http.client.Client;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
@@ -34,20 +35,22 @@ import static java.util.Optional.ofNullable;
 public class RabbitMQManagement implements InitializingBean {
   public static final String GUEST = "guest";
   private final RabbitProperties rabbitProperties;
+  private final RabbitMQResilienceHealthProperties rabbitMQResilienceHealthProperties;
   private Client client;
 
-  public RabbitMQManagement(RabbitProperties rabbitProperties) {
+  public RabbitMQManagement(RabbitProperties rabbitProperties, RabbitMQResilienceHealthProperties rabbitMQResilienceHealthProperties) {
     this.rabbitProperties = rabbitProperties;
+    this.rabbitMQResilienceHealthProperties = rabbitMQResilienceHealthProperties;
   }
 
   @Override
   public void afterPropertiesSet() throws Exception {
     try {
-      StringBuilder sb = new StringBuilder().append("http://")
+      StringBuilder sb = new StringBuilder().append(rabbitMQResilienceHealthProperties.getManagementProtocol())
         .append(rabbitProperties.getHost())
         .append(":")
-        .append(rabbitProperties.getPort())
-        .append("/api/");
+        .append(rabbitMQResilienceHealthProperties.getManagementPort())
+        .append(rabbitMQResilienceHealthProperties.getManagementEndpoint());
       String username = ofNullable(rabbitProperties.getUsername()).orElse(GUEST);
       String password = ofNullable(rabbitProperties.getPassword()).orElse(GUEST);
       client = new Client(sb.toString(), username, password);
