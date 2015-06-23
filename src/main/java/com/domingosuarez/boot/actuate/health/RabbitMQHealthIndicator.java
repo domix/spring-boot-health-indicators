@@ -19,12 +19,15 @@ package com.domingosuarez.boot.actuate.health;
 import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.netflix.hystrix.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,16 +47,23 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
   private static final Status RABBIT_DOWN = new Status("RABBIT_DOWN");
   private final RabbitTemplate rabbitTemplate;
   private final RabbitMQResilienceHealthProperties properties;
+  private RabbitMQManagement rabbitMQManagement;
 
-  public RabbitMQHealthIndicator(RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
+  public RabbitMQHealthIndicator(ApplicationContext applicationContext, RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
     Assert.notNull(rabbitTemplate, "RabbitTemplate must not be null.");
     this.rabbitTemplate = rabbitTemplate;
     this.properties = properties;
+
+    try {
+      rabbitMQManagement = applicationContext.getBean(RabbitMQManagement.class);
+    } catch (BeansException e) {
+      rabbitMQManagement = null;
+    }
   }
 
   @Override
   protected void doHealthCheck(Health.Builder builder) throws Exception {
-    new HealthIndicatorCommand(builder, rabbitTemplate, properties).execute();
+    new HealthIndicatorCommand(builder, rabbitTemplate, rabbitMQManagement, properties).execute();
   }
 
   /**
@@ -64,6 +74,7 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
     private RabbitTemplate rabbitTemplate;
     private final RabbitMQResilienceHealthProperties properties;
     private Health.Builder builder;
+    private RabbitMQManagement rabbitMQManagement;
 
     /**
      * Creates the Hystrix command, using all the configuration values from RabbitMQResilienceHealthProperties
@@ -72,7 +83,7 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
      * @param rabbitTemplate
      * @param properties
      */
-    public HealthIndicatorCommand(Health.Builder builder, RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
+    public HealthIndicatorCommand(Health.Builder builder, RabbitTemplate rabbitTemplate, RabbitMQManagement rabbitMQManagement, RabbitMQResilienceHealthProperties properties) {
       super(HystrixCommand.Setter
         .withGroupKey(HystrixCommandGroupKey.Factory.asKey(properties.getHystrixCommandGroupKey()))
         .andCommandKey(HystrixCommandKey.Factory.asKey(properties.getHystrixCommandKey()))
@@ -81,6 +92,7 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
       this.builder = builder;
       this.rabbitTemplate = rabbitTemplate;
       this.properties = properties;
+      this.rabbitMQManagement = rabbitMQManagement;
     }
 
     @Override
@@ -100,6 +112,11 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
       Health.Builder up = builder.up();
 
       if (properties.getIncludeServerProperties()) {
+        Map<String, Object> managementInfo = ofNullable(rabbitMQManagement)
+          .map(rabbit -> rabbit.getManagementInfo())
+          .orElse(Collections.emptyMap());
+
+        serverProperties.put("management-info", managementInfo);
         return up.withDetail("server_properties", serverProperties);
       } else {
         String version = ofNullable(serverProperties.get(VERSION)).map(Object::toString).orElse("");

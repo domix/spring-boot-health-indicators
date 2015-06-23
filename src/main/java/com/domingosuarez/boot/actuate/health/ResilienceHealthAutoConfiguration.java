@@ -20,6 +20,7 @@ import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProp
 import com.domingosuarez.boot.actuate.health.config.ResilienceHealthProperties;
 import com.netflix.hystrix.Hystrix;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.http.client.Client;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
@@ -27,10 +28,12 @@ import org.springframework.boot.actuate.health.CompositeHealthIndicator;
 import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -63,17 +66,30 @@ public class ResilienceHealthAutoConfiguration {
     @Autowired
     private Map<String, RabbitTemplate> rabbitTemplates;
 
+    @Autowired
+    private RabbitProperties rabbitProperties;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Bean
+    @ConditionalOnClass(Client.class)
+    @ConditionalOnMissingBean(RabbitMQManagement.class)
+    public RabbitMQManagement rabbitMQManagementInformation() {
+      return new RabbitMQManagement(rabbitProperties);
+    }
+
     @Bean
     @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
     public HealthIndicator rabbitMQHealthIndicator() {
       if (this.rabbitTemplates.size() == 1) {
-        return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next(), properties);
+        return new RabbitMQHealthIndicator(applicationContext, this.rabbitTemplates.values().iterator().next(), properties);
       }
 
       CompositeHealthIndicator composite = new CompositeHealthIndicator(this.healthAggregator);
 
       rabbitTemplates.entrySet().stream().
-        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(entry.getValue(), properties)));
+        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(applicationContext, entry.getValue(), properties)));
 
       return composite;
     }
