@@ -1,4 +1,9 @@
 
+0.1.12 / 2015-06-22
+==================
+
+  * splitting the configuration to fix a startup issue.
+
 0.1.11 / 2015-06-22
 ==================
 
