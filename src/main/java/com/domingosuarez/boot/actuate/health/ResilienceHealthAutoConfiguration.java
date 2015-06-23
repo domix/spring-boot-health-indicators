@@ -53,6 +53,19 @@ public class ResilienceHealthAutoConfiguration {
   private ResilienceHealthProperties configurationProperties = new ResilienceHealthProperties();
 
   @Configuration
+  @ConditionalOnClass(Client.class)
+  public static class RabbitManagementConfiguration {
+    @Autowired
+    private RabbitProperties rabbitProperties;
+
+    @Bean
+    @ConditionalOnMissingBean(RabbitMQManagement.class)
+    public RabbitMQManagement rabbitMQManagementInformation() {
+      return new RabbitMQManagement(rabbitProperties);
+    }
+  }
+
+  @Configuration
   @ConditionalOnClass({RabbitTemplate.class, Channel.class})
   @ConditionalOnProperty(prefix = "resilience.health.rabbit", name = "enabled", matchIfMissing = true)
   @EnableConfigurationProperties(RabbitMQResilienceHealthProperties.class)
@@ -67,17 +80,7 @@ public class ResilienceHealthAutoConfiguration {
     private Map<String, RabbitTemplate> rabbitTemplates;
 
     @Autowired
-    private RabbitProperties rabbitProperties;
-
-    @Autowired
     private ApplicationContext applicationContext;
-
-    @Bean
-    @ConditionalOnClass(Client.class)
-    @ConditionalOnMissingBean(RabbitMQManagement.class)
-    public RabbitMQManagement rabbitMQManagementInformation() {
-      return new RabbitMQManagement(rabbitProperties);
-    }
 
     @Bean
     @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
@@ -94,4 +97,5 @@ public class ResilienceHealthAutoConfiguration {
       return composite;
     }
   }
+  
 }
