@@ -1,4 +1,13 @@
 
+0.1.11 / 2015-06-22
+==================
+
+  * added RabbitMQ management info
+  * upgrade some dependencies
+  * just a minor style improvement
+  * using Optional instead of ternary operator
+  * Documenting the settings for RabbitMQ health indicator and javadocs.
+
 0.1.10 / 2015-06-01
 ==================
 
