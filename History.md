@@ -1,4 +1,9 @@
 
+0.1.13 / 2015-06-22
+==================
+
+  * fix missing credentials: added default username & password if they are not set
+
 0.1.12 / 2015-06-22
 ==================
 
@@ -27,7 +32,7 @@
 ==================
 
   * added the ability to disable the inclusion of RabbitMQ server properties
-  * added the ability to enable the classical behaviour of the SpringBoot Rabbit health indicator
+  * added the ability to enable the classical behavior of the SpringBoot Rabbit health indicator
 
 0.1.7 / 2015-06-01
 ==================
