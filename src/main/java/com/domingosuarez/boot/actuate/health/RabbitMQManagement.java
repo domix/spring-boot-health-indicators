@@ -18,6 +18,7 @@ package com.domingosuarez.boot.actuate.health;
 
 import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.rabbitmq.http.client.Client;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 
@@ -32,6 +33,7 @@ import static java.util.Optional.ofNullable;
  * @author Domingo Suarez Torres
  * @since 0.1.11
  */
+@Slf4j
 public class RabbitMQManagement implements InitializingBean {
   public static final String GUEST = "guest";
   private final RabbitProperties rabbitProperties;
@@ -51,10 +53,18 @@ public class RabbitMQManagement implements InitializingBean {
         .append(":")
         .append(rabbitMQResilienceHealthProperties.getManagementPort())
         .append(rabbitMQResilienceHealthProperties.getManagementEndpoint());
+
       String username = ofNullable(rabbitProperties.getUsername()).orElse(GUEST);
       String password = ofNullable(rabbitProperties.getPassword()).orElse(GUEST);
-      client = new Client(sb.toString(), username, password);
+      String url = sb.toString();
+
+      log.info("About to create a Rabbit HTTP client using url: {}.");
+
+      client = new Client(url, username, password);
+      log.info("Rabbit HTTP client created.");
+
     } catch (MalformedURLException | URISyntaxException e) {
+      log.error(e.getMessage(), e);
       client = null;
     }
   }
