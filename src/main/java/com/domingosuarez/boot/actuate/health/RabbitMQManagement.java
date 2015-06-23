@@ -32,6 +32,7 @@ import static java.util.Optional.ofNullable;
  * @since 0.1.11
  */
 public class RabbitMQManagement implements InitializingBean {
+  public static final String GUEST = "guest";
   private final RabbitProperties rabbitProperties;
   private Client client;
 
@@ -47,7 +48,9 @@ public class RabbitMQManagement implements InitializingBean {
         .append(":")
         .append(rabbitProperties.getPort())
         .append("/api/");
-      client = new Client(sb.toString(), rabbitProperties.getUsername(), rabbitProperties.getPassword());
+      String username = ofNullable(rabbitProperties.getUsername()).orElse(GUEST);
+      String password = ofNullable(rabbitProperties.getPassword()).orElse(GUEST);
+      client = new Client(sb.toString(), username, password);
     } catch (MalformedURLException | URISyntaxException e) {
       client = null;
     }
