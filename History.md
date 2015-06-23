@@ -1,4 +1,9 @@
 
+0.1.17 / 2015-06-23
+==================
+
+  * general cleanup, improved how to get the RabbitMQManagement
+
 0.1.16 / 2015-06-22
 ==================
 
