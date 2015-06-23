@@ -85,7 +85,7 @@ public class RabbitMQResilienceHealthProperties {
 
   @Setter
   @Getter
-  private String managementProtocol = "http";
+  private String managementProtocol = "http://";
 
   @Setter
   @Getter
