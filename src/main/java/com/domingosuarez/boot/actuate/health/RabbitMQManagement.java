@@ -18,6 +18,7 @@ package com.domingosuarez.boot.actuate.health;
 
 import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.rabbitmq.http.client.Client;
+import com.rabbitmq.http.client.domain.NodeInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
@@ -25,8 +26,10 @@ import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -38,7 +41,7 @@ public class RabbitMQManagement implements InitializingBean {
   public static final String GUEST = "guest";
   private final RabbitProperties rabbitProperties;
   private final RabbitMQResilienceHealthProperties rabbitMQResilienceHealthProperties;
-  private Client client;
+  private Client client = null;
 
   public RabbitMQManagement(RabbitProperties rabbitProperties, RabbitMQResilienceHealthProperties rabbitMQResilienceHealthProperties) {
     this.rabbitProperties = rabbitProperties;
@@ -49,6 +52,7 @@ public class RabbitMQManagement implements InitializingBean {
   public void afterPropertiesSet() throws Exception {
     try {
       StringBuilder sb = new StringBuilder().append(rabbitMQResilienceHealthProperties.getManagementProtocol())
+        .append("://")
         .append(rabbitProperties.getHost())
         .append(":")
         .append(rabbitMQResilienceHealthProperties.getManagementPort())
@@ -58,14 +62,13 @@ public class RabbitMQManagement implements InitializingBean {
       String password = ofNullable(rabbitProperties.getPassword()).orElse(GUEST);
       String url = sb.toString();
 
-      log.info("About to create a Rabbit HTTP client using url: {}.");
+      log.info("About to create a Rabbit HTTP client using url: {}.", url);
 
       client = new Client(url, username, password);
       log.info("Rabbit HTTP client created.");
 
     } catch (MalformedURLException | URISyntaxException e) {
       log.error(e.getMessage(), e);
-      client = null;
     }
   }
 
@@ -73,11 +76,33 @@ public class RabbitMQManagement implements InitializingBean {
     Map<String, Object> result = new HashMap<>();
 
     ofNullable(client).ifPresent(client -> {
-      result.put("cluster-name", client.getClusterName().getName());
-      result.put("nodes", client.getNodes());
+      result.put("cluster_name", getClusterName(client));
+      result.put("nodes", getNodes(client));
     });
 
     return result;
+  }
+
+  private List<NodeInfo> getNodes(Client client) {
+    List<NodeInfo> result = null;
+    try {
+      return client.getNodes();
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
+
+    return ofNullable(result).orElse(emptyList());
+  }
+
+  private String getClusterName(Client client) {
+    String result = null;
+    try {
+      result = client.getClusterName().getName();
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
+
+    return ofNullable(result).orElse("Unknown");
   }
 
 }

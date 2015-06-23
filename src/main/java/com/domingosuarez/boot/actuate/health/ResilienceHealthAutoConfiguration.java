@@ -33,7 +33,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -82,20 +81,20 @@ public class ResilienceHealthAutoConfiguration {
     @Autowired
     private Map<String, RabbitTemplate> rabbitTemplates;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    @Autowired(required = false)
+    RabbitMQManagement rabbitMQManagement = null;
 
     @Bean
     @ConditionalOnMissingBean(RabbitMQHealthIndicator.class)
     public HealthIndicator rabbitMQHealthIndicator() {
       if (this.rabbitTemplates.size() == 1) {
-        return new RabbitMQHealthIndicator(applicationContext, this.rabbitTemplates.values().iterator().next(), properties);
+        return new RabbitMQHealthIndicator(this.rabbitTemplates.values().iterator().next(), rabbitMQManagement, properties);
       }
 
       CompositeHealthIndicator composite = new CompositeHealthIndicator(this.healthAggregator);
 
       rabbitTemplates.entrySet().stream().
-        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(applicationContext, entry.getValue(), properties)));
+        forEach(entry -> composite.addHealthIndicator(entry.getKey(), new RabbitMQHealthIndicator(entry.getValue(), rabbitMQManagement, properties)));
 
       return composite;
     }

@@ -69,6 +69,10 @@ public class RabbitMQResilienceHealthProperties {
   @Getter
   private Boolean includeServerProperties = Boolean.TRUE;
 
+  @Setter
+  @Getter
+  private Boolean includeManagementInformation = Boolean.TRUE;
+
   /**
    * When RabbitMQ is down, the default response by the indicator will be 'RABBIT_DOWN'
    * and the Application health will not be affected by the failing RabbitMQ.
@@ -85,7 +89,7 @@ public class RabbitMQResilienceHealthProperties {
 
   @Setter
   @Getter
-  private String managementProtocol = "http://";
+  private String managementProtocol = "http";
 
   @Setter
   @Getter

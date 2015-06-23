@@ -19,18 +19,16 @@ package com.domingosuarez.boot.actuate.health;
 import com.domingosuarez.boot.actuate.health.config.RabbitMQResilienceHealthProperties;
 import com.netflix.hystrix.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.BeansException;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
@@ -47,18 +45,13 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
   private static final Status RABBIT_DOWN = new Status("RABBIT_DOWN");
   private final RabbitTemplate rabbitTemplate;
   private final RabbitMQResilienceHealthProperties properties;
-  private RabbitMQManagement rabbitMQManagement;
+  private RabbitMQManagement rabbitMQManagement = null;
 
-  public RabbitMQHealthIndicator(ApplicationContext applicationContext, RabbitTemplate rabbitTemplate, RabbitMQResilienceHealthProperties properties) {
+  public RabbitMQHealthIndicator(RabbitTemplate rabbitTemplate, RabbitMQManagement rabbitMQManagement, RabbitMQResilienceHealthProperties properties) {
     Assert.notNull(rabbitTemplate, "RabbitTemplate must not be null.");
     this.rabbitTemplate = rabbitTemplate;
+    this.rabbitMQManagement = rabbitMQManagement;
     this.properties = properties;
-
-    try {
-      rabbitMQManagement = applicationContext.getBean(RabbitMQManagement.class);
-    } catch (BeansException e) {
-      rabbitMQManagement = null;
-    }
   }
 
   @Override
@@ -114,9 +107,9 @@ public class RabbitMQHealthIndicator extends AbstractHealthIndicator {
       if (properties.getIncludeServerProperties()) {
         Map<String, Object> managementInfo = ofNullable(rabbitMQManagement)
           .map(rabbit -> rabbit.getManagementInfo())
-          .orElse(Collections.emptyMap());
+          .orElse(emptyMap());
 
-        serverProperties.put("management-info", managementInfo);
+        serverProperties.put("management_info", managementInfo);
         return up.withDetail("server_properties", serverProperties);
       } else {
         String version = ofNullable(serverProperties.get(VERSION)).map(Object::toString).orElse("");
