@@ -1,4 +1,9 @@
 
+0.1.14 / 2015-06-22
+==================
+
+  * added configuration settings for management plugin
+
 0.1.13 / 2015-06-22
 ==================
 
